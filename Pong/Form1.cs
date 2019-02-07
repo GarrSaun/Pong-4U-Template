@@ -27,6 +27,7 @@ namespace Pong
 
         //graphics objects for drawing
         SolidBrush drawBrush = new SolidBrush(Color.White);
+        SolidBrush buttonBrush = new SolidBrush(Color.Black);
         Font drawFont = new Font("Courier New", 10);
 
         // Sounds for game
@@ -42,11 +43,11 @@ namespace Pong
         //ball directions, speed, and rectangle
         Boolean ballMoveRight = true;
         Boolean ballMoveDown = true;
-        const int BALL_SPEED = 6;
+        const int BALL_SPEED = 4;
         Rectangle ball;
 
         //paddle speeds and rectangles
-        const int PADDLE_SPEED = 7;
+        const int PADDLE_SPEED = 5;
         Rectangle p1, p2;
 
         //player and game scores
@@ -216,13 +217,14 @@ namespace Pong
             if (ball.Y < 0) // if ball hits top line
             {
                 ballMoveDown = true;
-
+                collisionSound.Play();
                 // TODO use ballMoveDown boolean to change direction
                 // TODO play a collision sound
             }
            else if (ball.Y > this.Height - ball.Height)
             {
                 ballMoveDown = false;
+                collisionSound.Play();
             }
             // TODO In an else if statement use ball.Y, this.Height, and ball.Width to check for collision with bottom line
             // If true use ballMoveDown down boolean to change direction
@@ -235,20 +237,12 @@ namespace Pong
                  // --- play a "paddle hit" sound and
                  // --- use ballMoveRight boolean to change direction
 
-            if (p1.IntersectsWith(ball))
+            if (p1.IntersectsWith(ball) || p2.IntersectsWith(ball))
             {
                 ballMoveRight = !ballMoveRight;
+                collisionSound.Play();
                 //ballMoveDown = !ballMoveDown;
             }
-
-            if (p2.IntersectsWith(ball))
-            {
-                ballMoveRight = !ballMoveRight;
-                //ballMoveDown = !ballMoveDown;
-            }
-            // TODO create if statment that checks p2 collides with ball and if it does
-                // --- play a "paddle hit" sound and
-                // --- use ballMoveRight boolean to change direction
             
             /*  ENRICHMENT
              *  Instead of using two if statments as noted above see if you can create one
@@ -265,6 +259,7 @@ namespace Pong
                 // --- play score sound
                 // --- update player 2 score
                 player2Score = player2Score + 1;
+                scoreSound.Play();
                 SetParameters();
                 // TODO use if statement to check to see if player 2 has won the game. If true run 
                 // GameOver method. Else change direction of ball and call SetParameters method.
@@ -276,6 +271,7 @@ namespace Pong
             if (ball.X > this.Width - ball.Width)
             {
                 player1Score = player1Score + 1;
+                scoreSound.Play();
                 SetParameters();
             }
 
