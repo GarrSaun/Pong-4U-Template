@@ -27,7 +27,6 @@ namespace Pong
 
         //graphics objects for drawing
         SolidBrush drawBrush = new SolidBrush(Color.White);
-        SolidBrush buttonBrush = new SolidBrush(Color.Black);
         Font drawFont = new Font("Courier New", 10);
 
         // Sounds for game
@@ -43,17 +42,23 @@ namespace Pong
         //ball directions, speed, and rectangle
         Boolean ballMoveRight = true;
         Boolean ballMoveDown = true;
-        const int BALL_SPEED = 4;
+        const int DEFAULT_BALL = 3;
+        int ballSpeed = 3;
         Rectangle ball;
 
         //paddle speeds and rectangles
-        const int PADDLE_SPEED = 5;
+        const int DEFAULT_PADDLE = 4;
+        int paddleSpeed = 4;
         Rectangle p1, p2;
 
         //player and game scores
         int player1Score = 0;
         int player2Score = 0;
-        int gameWinScore = 2;  // number of points needed to win game
+        int gameWinScore = 3;  // number of points needed to win game
+
+        //Random chance of changing direction
+        Random randGen = new Random();
+        int reverseChance;
 
         #endregion
 
@@ -68,19 +73,24 @@ namespace Pong
             //check to see if a key is pressed and set is KeyDown value to true if it has
             switch (e.KeyCode)
             {
+                //Player 1 Movement
                 case Keys.W:
                     wKeyDown = true;
                     break;
                 case Keys.S:
                     sKeyDown = true;
                     break;
+                //Player 2 Movement
                 case Keys.Up:
                     upKeyDown = true;
                     break;
                 case Keys.Down:
                     downKeyDown = true;
                     break;
-                case Keys.Y:
+                //restarts the game
+                case Keys.Escape: 
+                    Restart();
+                    break;
                 case Keys.Space:
                     if (newGameOk)
                     {
@@ -134,7 +144,7 @@ namespace Pong
             const int PADDLE_EDGE = 20;  // buffer distance between screen edge and paddle            
 
             p1.Width = p2.Width = 10;    //height for both paddles set the same
-            p1.Height = p2.Height = 40;  //width for both paddles set the same
+            p1.Height = p2.Height = 50;  //width for both paddles set the same
 
             //p1 starting position
             p1.X = PADDLE_EDGE;
@@ -145,12 +155,17 @@ namespace Pong
             p2.Y = this.Height / 2 - p2.Height / 2;
 
             // TODO set Width and Height of ball
-            ball.Width = ball.Height = 10;
+            ball.Width = ball.Height = 8;
             ball.X = this.Width / 2 - ball.Width/2;
             ball.Y = this.Height / 2 - ball.Height/2;
 
             // TODO set starting X position for ball to middle of screen, (use this.Width and ball.Width)
             // TODO set starting Y position for ball to middle of screen, (use this.Height and ball.Height)
+
+            ballSpeed = DEFAULT_BALL;
+            paddleSpeed = DEFAULT_PADDLE;
+            ballMoveRight = true;
+            ballMoveDown = true;
 
         }
 
@@ -165,21 +180,21 @@ namespace Pong
             // TODO create code to move ball either left or right based on ballMoveRight and using BALL_SPEED
             if (ballMoveRight == true)
             {
-                ball.X = ball.X + BALL_SPEED;
+                ball.X = ball.X + ballSpeed;
             }
             else if (ballMoveRight == false)
             {
-                ball.X = ball.X - BALL_SPEED;
+                ball.X = ball.X - ballSpeed;
             }
             // TODO create code move ball either down or up based on ballMoveDown and using BALL_SPEED
 
             if (ballMoveDown == true)
             {
-                ball.Y = ball.Y + BALL_SPEED;
+                ball.Y = ball.Y + ballSpeed;
             }
             else if (ballMoveDown == false)
             {
-                ball.Y = ball.Y - BALL_SPEED;
+                ball.Y = ball.Y - ballSpeed;
             }
 
             #endregion
@@ -189,25 +204,25 @@ namespace Pong
             if (wKeyDown == true && p1.Y > 0)
             {
                 // TODO create code to move player 1 paddle up using p1.Y and PADDLE_SPEED
-                p1.Y = p1.Y - PADDLE_SPEED;
+                p1.Y = p1.Y - paddleSpeed;
             }
 
             if (sKeyDown == true && p1.Y < this.Height - p1.Height)
             {
                 // TODO create code to move player 1 paddle down using p1.Y and PADDLE_SPEED
-                p1.Y = p1.Y + PADDLE_SPEED;
+                p1.Y = p1.Y + paddleSpeed;
             }
 
             // TODO create an if statement and code to move player 2 paddle up using p2.Y and PADDLE_SPEED
             if (upKeyDown == true && p2.Y > 0)
             {
-                p2.Y = p2.Y - PADDLE_SPEED;
+                p2.Y = p2.Y - paddleSpeed;
             }
 
             // TODO create an if statement and code to move player 2 paddle down using p2.Y and PADDLE_SPEED
             if (downKeyDown == true && p2.Y < this.Height - p2.Height)
             {
-                p2.Y = p2.Y + PADDLE_SPEED;
+                p2.Y = p2.Y + paddleSpeed;
             }
 
             #endregion
@@ -241,13 +256,17 @@ namespace Pong
             {
                 ballMoveRight = !ballMoveRight;
                 collisionSound.Play();
-                //ballMoveDown = !ballMoveDown;
+                //Gives the ball a chance to change vertical direction on a hit and increases speed
+                reverseChance = randGen.Next(1, 6);
+                if (reverseChance == 5)
+                {
+                    ballMoveDown = !ballMoveDown;
+                    ballSpeed = ballSpeed + 1;
+                    paddleSpeed = paddleSpeed + 1;
+
+                }
+                
             }
-            
-            /*  ENRICHMENT
-             *  Instead of using two if statments as noted above see if you can create one
-             *  if statement with multiple conditions to play a sound and change direction
-             */
 
             #endregion
 
@@ -275,13 +294,13 @@ namespace Pong
                 SetParameters();
             }
 
-            if (player1Score > gameWinScore)
+           if (player1Score == gameWinScore)
             {
-                GameOver("Player 1 Wins");
+                GameOver("Player 1");
             }
-            else if (player2Score > gameWinScore)
+            else if (player2Score == gameWinScore)
             {
-                GameOver("Player 2 Wins");
+                GameOver("Player 2");
             }
                 
             #endregion
@@ -295,12 +314,14 @@ namespace Pong
         /// to play again or end the program
         /// </summary>
         /// <param name="winner">The player name to be shown as the winner</param>
+        /// 
+       
         private void GameOver(string winner)
         {
             newGameOk = true;
             gameUpdateLoop.Stop();
             startLabel.Visible = true;
-            startLabel.Text = winner + "";
+            startLabel.Text = winner + " Wins";
             this.Refresh();
             Thread.Sleep(2000);
             startLabel.Text = "Press Space to Restart";
@@ -310,6 +331,15 @@ namespace Pong
             // --- pause for two seconds 
             // --- use the startLabel to ask the user if they want to play again
 
+        }
+
+        private void Restart()
+        {
+            newGameOk = true;
+            gameUpdateLoop.Stop();
+            startLabel.Visible = true;
+            startLabel.Text = "Press Space to Restart";
+            this.Refresh();
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -322,8 +352,8 @@ namespace Pong
             e.Graphics.FillEllipse(drawBrush, ball);
 
             // TODO draw scores to the screen using DrawString
-            e.Graphics.DrawString(player1Score + "", drawFont, drawBrush, 40, 50);
-            e.Graphics.DrawString(player2Score + "", drawFont, drawBrush, this.Width - 40, 50);
+            e.Graphics.DrawString(player1Score + "", drawFont, drawBrush, 50, 50);
+            e.Graphics.DrawString(player2Score + "", drawFont, drawBrush, this.Width - 60, 50);
         }
 
     }
